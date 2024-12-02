@@ -1,101 +1,103 @@
-import Image from "next/image";
+"use client"
+import { useEffect ,useState} from 'react';
+
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleButtonClick = () => {
+    setIsPopupOpen(true);
+  };
+
+  const handleClosePopup = () => {
+    setIsPopupOpen(false);
+  };
+
+
+  const [graceTime, setGraceTime] = useState<number | null>(null);
+  const [searchLimit, setSearchLimit] = useState<number | null>(null);
+  const [isEditingGraceTime, setIsEditingGraceTime] = useState(false);
+  const [isEditingSearchLimit, setIsEditingSearchLimit] = useState(false);
+
+  useEffect(() => {
+    // Fetch current grace time settings
+    fetch('/api/grace-time')
+      .then(response => response.json())
+      .then(data => setGraceTime(data.grace_time));
+
+    // Fetch current search limit settings
+    fetch('/api/search-limit')
+      .then(response => response.json())
+      .then(data => setSearchLimit(data.search_limit));
+  }, []);
+
+  const handleSaveGraceTime = () => {
+    fetch('/api/grace-time', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ grace_time: graceTime }),
+    }).then(() => setIsEditingGraceTime(false));
+  };
+
+  const handleSaveSearchLimit = () => {
+    fetch('/api/search-limit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ search_limit: searchLimit }),
+    }).then(() => setIsEditingSearchLimit(false));
+  };
+
+  return (
+    <div>
+      <p>Grace Time</p>
+      <button onClick={handleButtonClick}>Settings</button>
+      {isPopupOpen && (
+        <div className="popup border border-black w-fit p-5 m-auto top-10">
+          <div className="popup-content">
+            <span className="close cursor-pointer" onClick={handleClosePopup}>&times;</span>
+            <div>
+              <p>Grace Time Settings</p>
+              {isEditingGraceTime ? (
+                <div>
+                  <input
+                    type="number"
+                    value={graceTime ?? ''}
+                    onChange={(e) => setGraceTime(Number(e.target.value))}
+                  />
+                  <button onClick={handleSaveGraceTime}>Save Changes</button>
+                </div>
+              ) : (
+                <div>
+                  <p>{graceTime}</p>
+                  <button onClick={() => setIsEditingGraceTime(true)}>Edit Grace Time</button>
+                </div>
+              )}
+            </div>
+            <div>
+              <p>Search Limit Settings</p>
+              {isEditingSearchLimit ? (
+                <div>
+                  <input
+                    type="number"
+                    value={searchLimit ?? ''}
+                    onChange={(e) => setSearchLimit(Number(e.target.value))}
+                  />
+                  <button onClick={handleSaveSearchLimit}>Save Changes</button>
+                </div>
+              ) : (
+                <div>
+                  <p>{searchLimit}</p>
+                  <button onClick={() => setIsEditingSearchLimit(true)}>Edit Search Limit</button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      )}
     </div>
   );
 }
